@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/codex-team/tinkoff.api.golang"
-	"github.com/nikita-vanyasin/tinkoff"
 	"log"
 )
 
