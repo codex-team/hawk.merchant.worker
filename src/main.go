@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/codex-team/tinkoff.api.golang"
 	"log"
 	"os"
@@ -112,6 +113,7 @@ func initialize() {
 func main() {
 	forever := make(chan bool)
 	initialize()
+	go initPublisher()
 
 	go handleQueue("merchant/initialized", func(body []byte, database *mongo.Database) {
 		log.Printf("merchant/initialized: %s", body)
@@ -173,7 +175,7 @@ func main() {
 
 		log.Printf("payment saved: ID=%s", res.InsertedID)
 
-		err = confirm(tinkoff.ConfirmRequest{
+		_, err = confirm(tinkoff.ConfirmRequest{
 			BaseRequest: tinkoff.BaseRequest{
 				tinkoffTerminalKey, tinkoffSecretKey,
 			},
@@ -182,6 +184,12 @@ func main() {
 		})
 		if err != nil {
 			return
+		}
+
+		messagesQueue <- QueueMessage{
+			Exchange: notificationsExchange,
+			Route:    notificationsRoute,
+			Payload:  []byte(fmt.Sprintf("Payment confirmed: %d kopecs", data.Amount)),
 		}
 	})
 

@@ -1,5 +1,7 @@
 github.com/codex-team/tinkoff.api.golang v0.0.0-20190825110656-175608a42215 h1:OqShRwpZGjxTStum6P7ifg8RRiqOZbeNiHlRfG/71bk=
 github.com/codex-team/tinkoff.api.golang v0.0.0-20190825110656-175608a42215/go.mod h1:HTui60JhrHsNMp3GS1Q26I1jp21qN+tuLT3xxxx0n1w=
+github.com/codex-team/tinkoff.api.golang v0.0.0-20190827221437-387070d81789 h1:l/R5jlnFxmHTXg/x+heVX+VhCX6Y9eMSbergtFJ09Ac=
+github.com/codex-team/tinkoff.api.golang v0.0.0-20190827221437-387070d81789/go.mod h1:HTui60JhrHsNMp3GS1Q26I1jp21qN+tuLT3xxxx0n1w=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/go-stack/stack v1.8.0 h1:5SgMzNM5HxrEjV0ww2lTmX6E2Izsfxas4+YHWRs3Lsk=
