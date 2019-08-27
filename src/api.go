@@ -5,12 +5,12 @@ import (
 	"log"
 )
 
-func confirm(request tinkoff.ConfirmRequest) {
+func confirm(request tinkoff.ConfirmRequest) error {
 	client := tinkoff.NewClient(tinkoffTerminalKey, tinkoffSecretKey)
-	result, err := client.Confirm(&request)
+	_, err := client.Confirm(&request)
 	if err != nil {
 		log.Printf("Confirmation error: %s", err)
 	}
 
-	log.Printf("%s", result)
+	return err
 }

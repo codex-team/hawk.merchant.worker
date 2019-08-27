@@ -10,7 +10,7 @@ type PaymentRequest struct {
 	UserId      string    `bson:"userId,omitempty"`
 	Timestamp   time.Time `bson:"timestamp"`
 	Status      string    `bson:"status"`
-	RebillId    string    `bson:"rebillid,omitempty"`
+	RebillId    uint64    `bson:"rebillid,omitempty"`
 	ErrorCode   int       `bson:"errorCode"`
 	Amount      uint64    `bson:"amount,omitempty"`
 	CardId      int       `bson:"cardId,omitempty"`

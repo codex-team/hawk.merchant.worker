@@ -22,4 +22,5 @@ type PaymentAuthorized struct {
 	CardId    int       `json:"cardId"`
 	Pan       string    `json:"pan"`
 	ExpDate   string    `json:"expDate"`
+	RebillId  uint64    `json:"rebillId"`
 }

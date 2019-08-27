@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/codex-team/tinkoff.api.golang"
-	"github.com/joho/godotenv"
-	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 	"os"
 	"time"
+
+	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/streadway/amqp"
 )
@@ -160,6 +161,7 @@ func main() {
 			Pan:       data.Pan,
 			ExpDate:   data.ExpDate,
 			Timestamp: data.Timestamp,
+			RebillId:  data.RebillId,
 		}
 
 		ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
@@ -171,13 +173,16 @@ func main() {
 
 		log.Printf("payment saved: ID=%s", res.InsertedID)
 
-		confirm(tinkoff.ConfirmRequest{
+		err = confirm(tinkoff.ConfirmRequest{
 			BaseRequest: tinkoff.BaseRequest{
 				tinkoffTerminalKey, tinkoffSecretKey,
 			},
 			PaymentID: newPayment.PaymentId,
 			Amount:    newPayment.Amount,
 		})
+		if err != nil {
+			return
+		}
 	})
 
 	go handleQueue("merchant/confirmed", func(body []byte, database *mongo.Database) {
