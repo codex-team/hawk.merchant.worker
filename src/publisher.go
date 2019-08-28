@@ -12,8 +12,8 @@ type QueueMessage struct {
 	Route    string              `json:"route"`
 }
 
-const notificationsExchange = "notifications"
-const notificationsRoute = "worker/notifications/checker"
+const notificationsExchange = "notify"
+const notificationsRoute = "notify/checker"
 
 var messagesQueue = make(chan QueueMessage)
 
