@@ -7,9 +7,8 @@ import (
 )
 
 type QueueMessage struct {
-	Payload  NotificationMessage `json:"payload"`
-	Exchange string              `json:"exchange"`
-	Route    string              `json:"route"`
+	Type    string              `json:"type"`
+	Payload NotificationMessage `json:"payload"`
 }
 
 const notificationsExchange = "notify"
@@ -30,8 +29,8 @@ func initPublisher() {
 			return
 		}
 		err = amqpChannel.Publish(
-			msg.Exchange,
-			msg.Route,
+			notificationsExchange,
+			notificationsRoute,
 			false, // mandatory
 			false, // immediate
 			amqp.Publishing{

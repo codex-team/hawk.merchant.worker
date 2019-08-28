@@ -170,8 +170,7 @@ func main() {
 		}
 
 		messagesQueue <- QueueMessage{
-			Exchange: notificationsExchange,
-			Route:    notificationsRoute,
+			Type: "merchant",
 			Payload: NotificationMessage{
 				Amount:      transaction.Amount,
 				UserId:      transaction.UserId,
