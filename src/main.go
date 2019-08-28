@@ -153,6 +153,8 @@ func main() {
 			return
 		}
 
+		log.Printf("found transaction: %v", transaction)
+
 		_, err = confirm(tinkoff.ConfirmRequest{
 			BaseRequest: tinkoff.BaseRequest{
 				TerminalKey: tinkoffTerminalKey,

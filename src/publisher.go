@@ -12,7 +12,7 @@ type QueueMessage struct {
 }
 
 const notificationsExchange = "notify"
-const notificationsRoute = "notify/checker"
+const notificationsRoute = "notify/check"
 
 var messagesQueue = make(chan QueueMessage)
 

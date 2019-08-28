@@ -39,14 +39,14 @@ type PaymentAuthorized struct {
 }
 
 type Transaction struct {
-	TransactionId string `json:"id"`
-	PaymentId     uint64 `json:"paymentId"`
-	OrderId       string `json:"orderId"`
+	TransactionId string `bson:"id"`
+	PaymentId     string `bson:"paymentId"`
+	OrderId       string `bson:"orderId"`
 	UserId        string `bson:"userId"`
-	Amount        uint64 `json:"amount"`
-	WorkspaceId   string `json:"workspaceId"`
-	Timestamp     uint32 `json:"timestamp"`
-	Status        string `json:"status"`
+	Amount        uint64 `bson:"amount"`
+	WorkspaceId   string `bson:"workspaceId"`
+	Timestamp     uint32 `bson:"timestamp"`
+	Status        string `bson:"status"`
 }
 
 type PaymentLog struct {
@@ -91,6 +91,7 @@ func (tr *Transaction) find(database *mongo.Database, orderId string) (bool, err
 	err := database.Collection(PaymentTransactionsCollection).FindOne(ctx, bson.D{
 		{"orderId", orderId},
 	}).Decode(&t)
+	log.Printf("%v", t)
 	if err == mongo.ErrNoDocuments {
 		return false, nil
 	}
@@ -98,6 +99,7 @@ func (tr *Transaction) find(database *mongo.Database, orderId string) (bool, err
 		log.Printf("[MongoDB] Transaction find error: %s", err)
 		return false, err
 	}
+	*tr = t
 	return true, nil
 }
 
