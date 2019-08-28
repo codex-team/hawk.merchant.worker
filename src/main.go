@@ -1,17 +1,13 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"github.com/codex-team/tinkoff.api.golang"
+	"github.com/joho/godotenv"
+	"github.com/streadway/amqp"
+	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 	"os"
-	"time"
-
-	"github.com/joho/godotenv"
-	"go.mongodb.org/mongo-driver/mongo"
-
-	"github.com/streadway/amqp"
 )
 
 var (
@@ -112,82 +108,85 @@ func initialize() {
 func main() {
 	forever := make(chan bool)
 	initialize()
+	go initPublisher()
 
+	// handle initialized payments
 	go handleQueue("merchant/initialized", func(body []byte, database *mongo.Database) {
 		log.Printf("merchant/initialized: %s", body)
 
-		var data PaymentInitialized
-		if err := json.Unmarshal(body, &data); err != nil {
-			log.Printf("Error: %s", err)
+		var payment PaymentInitialized
+		if err := json.Unmarshal(body, &payment); err != nil {
+			log.Printf("[PaymentInitialized] Unmarshal payload error: %s", err)
 			return
 		}
 
-		newPayment := PaymentRequest{
-			PaymentId:   data.PaymentId,
-			OrderId:     data.OrderId,
-			PaymentURL:  data.PaymentURL,
-			WorkspaceId: data.WorkspaceId,
-			UserId:      data.UserId,
-			Status:      data.Status,
-			Timestamp:   data.Timestamp,
-		}
-
-		ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-		res, err := database.Collection("paymentRequests").InsertOne(ctx, newPayment)
+		res, err := payment.save(database)
 		if err != nil {
-			log.Printf("MongoDB save error: %s", err)
 			return
 		}
-
-		log.Printf("payment saved: ID=%s", res.InsertedID)
+		log.Printf("[initialized] payment saved: ID=%s", res.InsertedID)
 	})
 
 	go handleQueue("merchant/authorized", func(body []byte, database *mongo.Database) {
 		log.Printf("merchant/authorized: %s", body)
 
-		var data PaymentAuthorized
-		if err := json.Unmarshal(body, &data); err != nil {
-			log.Printf("Error: %s", err)
+		var payment PaymentAuthorized
+		if err := json.Unmarshal(body, &payment); err != nil {
+			log.Printf("[PaymentAuthorized] Unmarshal payload error: %s", err)
 			return
 		}
 
-		newPayment := PaymentRequest{
-			PaymentId: data.PaymentId,
-			OrderId:   data.OrderId,
-			Status:    data.Status,
-			ErrorCode: data.ErrorCode,
-			Amount:    data.Amount,
-			CardId:    data.CardId,
-			Pan:       data.Pan,
-			ExpDate:   data.ExpDate,
-			Timestamp: data.Timestamp,
-			RebillId:  data.RebillId,
-		}
-
-		ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-		res, err := database.Collection("paymentRequests").InsertOne(ctx, newPayment)
+		res, err := payment.save(database)
 		if err != nil {
-			log.Printf("MongoDB save error: %s", err)
+			return
+		}
+		log.Printf("[authorized] payment saved: ID=%s", res.InsertedID)
+
+		// check transaction existence
+		var transaction Transaction
+		ok, err := transaction.find(database, payment.OrderId)
+		if err != nil {
+			return
+		}
+		if !ok {
+			log.Printf("[authorized] transaction not found: %s", payment.OrderId)
 			return
 		}
 
-		log.Printf("payment saved: ID=%s", res.InsertedID)
+		log.Printf("found transaction: %v", transaction)
 
-		err = confirm(tinkoff.ConfirmRequest{
+		_, err = confirm(tinkoff.ConfirmRequest{
 			BaseRequest: tinkoff.BaseRequest{
-				tinkoffTerminalKey, tinkoffSecretKey,
+				TerminalKey: tinkoffTerminalKey,
+				Token:       tinkoffSecretKey,
 			},
-			PaymentID: newPayment.PaymentId,
-			Amount:    newPayment.Amount,
+			PaymentID: payment.PaymentId,
+			Amount:    payment.Amount,
 		})
 		if err != nil {
 			return
+		}
+
+		if err := transaction.update(database, payment.OrderId); err != nil {
+			return
+		}
+
+		messagesQueue <- QueueMessage{
+			Type: "merchant",
+			Payload: NotificationMessage{
+				Amount:      transaction.Amount,
+				UserId:      transaction.UserId,
+				WorkspaceId: transaction.WorkspaceId,
+				Timestamp:   transaction.Timestamp,
+			},
 		}
 	})
 
 	go handleQueue("merchant/confirmed", func(body []byte, database *mongo.Database) {
 		log.Printf("confirmed: %s", body)
 	})
+
+	log.Printf("Server started:\n\t- AMQP: %s\n\t- MongoDB: %s\n", amqpURL, mongoURL)
 
 	<-forever
 }

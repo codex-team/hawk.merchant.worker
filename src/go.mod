@@ -1,7 +1,7 @@
 module hawk.merchant.go
 
 require (
-	github.com/codex-team/tinkoff.api.golang v0.0.0-20190825110656-175608a42215
+	github.com/codex-team/tinkoff.api.golang v0.0.0-20190827221437-387070d81789
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-cmp v0.3.1 // indirect
