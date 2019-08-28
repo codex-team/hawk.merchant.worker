@@ -184,5 +184,7 @@ func main() {
 		log.Printf("confirmed: %s", body)
 	})
 
+	log.Printf("Server started:\n\t- AMQP: %s\n\t- MongoDB: %s\n", amqpURL, mongoURL)
+
 	<-forever
 }
