@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"testing"
 	"time"
 )
@@ -35,8 +37,11 @@ func TestUserUpdate(t *testing.T) {
 		RebillId:  1567168445546,
 	}
 
+	fmt.Printf("%v", tr)
+	userIdObject, _ := primitive.ObjectIDFromHex(tr.UserId)
+
 	card := UserCard{
-		UserId:    tr.UserId,
+		UserId:    userIdObject,
 		CardId:    payment.CardId,
 		Pan:       payment.Pan,
 		ExpDate:   payment.ExpDate,

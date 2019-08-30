@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 	"time"
@@ -13,58 +14,39 @@ import (
 const PaymentLogsCollection = "paymentLogs"
 const PaymentTransactionsCollection = "paymentTransactions"
 const TransactionConfirmed = "CONFIRM"
-const UsersCollection = "users"
 const UserCardCollection = "userCard"
 
 type PaymentInitialized struct {
-	PaymentURL    string `json:"paymentURL"`
-	TransactionId string `json:"id"`
-	UserId        string `json:"userId"`
-	WorkspaceId   string `json:"workspaceId"`
-	Amount        uint64 `json:"amount"`
-	OrderId       string `json:"orderId"`
-	PaymentId     uint64 `json:"paymentId,string"`
-	Timestamp     uint32 `json:"timestamp"`
+	PaymentURL string             `bson:"paymentURL"`
+	Id         string             `json:"id" bson:"id"`
+	UserId     primitive.ObjectID `bson:"userId"`
+	Amount     uint64             `bson:"amount"`
+	OrderId    string             `bson:"orderId"`
+	PaymentId  uint64             `json:"paymentId,string" bson:"paymentId,string"`
+	Timestamp  uint64             `bson:"timestamp"`
 }
 
 type PaymentAuthorized struct {
 	OrderId   string `json:"orderId"`
 	PaymentId uint64 `json:"paymentId"`
 	Status    string `json:"status"`
-	Timestamp uint32 `json:"timestamp"`
+	Timestamp uint64 `json:"timestamp"`
 	ErrorCode int    `json:"errorCode,string"`
-	Amount    uint32 `json:"amount"`
-	CardId    uint32 `json:"cardId"`
+	Amount    uint64 `json:"amount"`
+	CardId    uint64 `json:"cardId"`
 	Pan       string `json:"pan"`
 	ExpDate   string `json:"expDate"`
 	RebillId  uint64 `json:"rebillId"`
 }
 
 type Transaction struct {
-	TransactionId string `bson:"id"`
-	PaymentId     string `bson:"paymentId"`
-	OrderId       string `bson:"orderId"`
-	UserId        string `bson:"userId"`
-	Amount        uint32 `bson:"amount"`
-	WorkspaceId   string `bson:"workspaceId"`
-	Timestamp     uint32 `bson:"timestamp"`
-	Status        string `bson:"status"`
-}
-
-type PaymentLog struct {
-	OrderId     string    `bson:"orderId"`
-	PaymentId   uint64    `bson:"paymentId"`
-	PaymentURL  string    `bson:"paymentURL,omitempty"`
-	WorkspaceId string    `bson:"workspaceId,omitempty"`
-	UserId      string    `bson:"userId,omitempty"`
-	Timestamp   time.Time `bson:"timestamp"`
-	Status      string    `bson:"status"`
-	RebillId    uint64    `bson:"rebillid,omitempty"`
-	ErrorCode   int       `bson:"errorCode"`
-	Amount      uint32    `bson:"amount,omitempty"`
-	CardId      uint32    `bson:"cardId,omitempty"`
-	Pan         string    `bson:"pan,omitempty"`
-	ExpDate     string    `bson:"expDate,omitempty"`
+	PaymentId   uint64             `json:"paymentId,string" bson:"paymentId,string"`
+	OrderId     string             `bson:"orderId"`
+	UserId      primitive.ObjectID `bson:"userId"`
+	Amount      uint64             `bson:"amount"`
+	WorkspaceId primitive.ObjectID `json:"workspaceId,omitempty "bson:"workspaceId,omitempty"`
+	Timestamp   uint64             `bson:"timestamp"`
+	Status      string             `bson:"status"`
 }
 
 func (pl *PaymentInitialized) save(database *mongo.Database) (*mongo.InsertOneResult, error) {

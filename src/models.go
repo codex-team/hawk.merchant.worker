@@ -3,18 +3,19 @@ package main
 import (
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 	"time"
 )
 
 type UserCard struct {
-	UserId    string `bson:"userId"`
-	CardId    uint32 `bson:"cardId"`
-	Pan       string `bson:"pan"`
-	ExpDate   string `bson:"expDate"`
-	RebillId  uint64 `bson:"rebillId"`
-	PaymentId uint64 `bson:"paymentId"`
+	UserId    primitive.ObjectID `bson:"userId"`
+	CardId    uint64             `bson:"cardId"`
+	Pan       string             `bson:"pan"`
+	ExpDate   string             `bson:"expDate"`
+	RebillId  uint64             `bson:"rebillId"`
+	PaymentId uint64             `bson:"paymentId"`
 }
 
 func (uc *UserCard) insert(database *mongo.Database) error {

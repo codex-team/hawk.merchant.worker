@@ -114,17 +114,17 @@ func main() {
 	go handleQueue("merchant/initialized", func(body []byte, database *mongo.Database) {
 		log.Printf("merchant/initialized: %s", body)
 
-		var payment PaymentInitialized
+		var payment Transaction
 		if err := json.Unmarshal(body, &payment); err != nil {
 			log.Printf("[PaymentInitialized] Unmarshal payload error: %s", err)
 			return
 		}
 
-		res, err := payment.save(database)
+		err := payment.save(database)
 		if err != nil {
 			return
 		}
-		log.Printf("[initialized] payment saved: ID=%s", res.InsertedID)
+		log.Printf("[initialized] payment saved: orderId=%s", payment.OrderId)
 	})
 
 	go handleQueue("merchant/authorized", func(body []byte, database *mongo.Database) {
@@ -160,7 +160,7 @@ func main() {
 				TerminalKey: tinkoffTerminalKey,
 				Token:       tinkoffSecretKey,
 			},
-			PaymentID: payment.PaymentId,
+			PaymentID: uint64(payment.PaymentId),
 			Amount:    uint64(payment.Amount),
 		})
 		if err != nil {
@@ -170,6 +170,9 @@ func main() {
 		if err := transaction.update(database, payment.OrderId); err != nil {
 			return
 		}
+
+		//userIdObject, err := primitive.ObjectIDFromHex(transaction.UserId)
+		//failOnError(err, "Cannot convert UserId to objectId")
 
 		card := UserCard{
 			UserId:    transaction.UserId,
