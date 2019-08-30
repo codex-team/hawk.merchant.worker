@@ -33,7 +33,7 @@ type PaymentAuthorized struct {
 	Status    string `json:"status"`
 	Timestamp uint32 `json:"timestamp"`
 	ErrorCode int    `json:"errorCode,string"`
-	Amount    uint64 `json:"amount"`
+	Amount    uint32 `json:"amount"`
 	CardId    uint32 `json:"cardId"`
 	Pan       string `json:"pan"`
 	ExpDate   string `json:"expDate"`
@@ -45,7 +45,7 @@ type Transaction struct {
 	PaymentId     string `bson:"paymentId"`
 	OrderId       string `bson:"orderId"`
 	UserId        string `bson:"userId"`
-	Amount        uint64 `bson:"amount"`
+	Amount        uint32 `bson:"amount"`
 	WorkspaceId   string `bson:"workspaceId"`
 	Timestamp     uint32 `bson:"timestamp"`
 	Status        string `bson:"status"`
@@ -61,7 +61,7 @@ type PaymentLog struct {
 	Status      string    `bson:"status"`
 	RebillId    uint64    `bson:"rebillid,omitempty"`
 	ErrorCode   int       `bson:"errorCode"`
-	Amount      uint64    `bson:"amount,omitempty"`
+	Amount      uint32    `bson:"amount,omitempty"`
 	CardId      uint32    `bson:"cardId,omitempty"`
 	Pan         string    `bson:"pan,omitempty"`
 	ExpDate     string    `bson:"expDate,omitempty"`
@@ -123,5 +123,16 @@ func (tr *Transaction) update(database *mongo.Database, orderId string) error {
 		log.Printf(msg)
 		return errors.New(msg)
 	}
+	return nil
+}
+
+func (tr *Transaction) save(database *mongo.Database) error {
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+
+	_, err := database.Collection(UserCardCollection).InsertOne(ctx, tr)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

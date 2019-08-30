@@ -13,7 +13,7 @@ import (
 
 const WorkspacesCollection = "workspaces"
 
-func updateWorkspaceBalance(database *mongo.Database, workspaceId string, amount uint) error {
+func updateWorkspaceBalance(database *mongo.Database, workspaceId string, amount uint32) error {
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 
 	workspaceObjectId, err := primitive.ObjectIDFromHex(workspaceId)

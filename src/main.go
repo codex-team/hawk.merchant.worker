@@ -161,7 +161,7 @@ func main() {
 				Token:       tinkoffSecretKey,
 			},
 			PaymentID: payment.PaymentId,
-			Amount:    payment.Amount,
+			Amount:    uint64(payment.Amount),
 		})
 		if err != nil {
 			return
@@ -196,6 +196,27 @@ func main() {
 
 	go handleQueue("merchant/confirmed", func(body []byte, database *mongo.Database) {
 		log.Printf("confirmed: %s", body)
+	})
+
+	go handleQueue("merchant/charged", func(body []byte, database *mongo.Database) {
+		log.Printf("charged: %s", body)
+
+		var transaction Transaction
+		if err := json.Unmarshal(body, &transaction); err != nil {
+			log.Printf("Charge unmarshal error: %s", err)
+			return
+		}
+
+		if err := transaction.save(database); err != nil {
+			log.Printf("Transaction save error: %s", err)
+			return
+		}
+
+		err := updateWorkspaceBalance(database, transaction.WorkspaceId, transaction.Amount)
+		if err != nil {
+			log.Printf("Balance update error: %s", err)
+			return
+		}
 	})
 
 	log.Printf("Server started:\n\t- AMQP: %s\n\t- MongoDB: %s\n", amqpURL, mongoURL)
