@@ -68,8 +68,7 @@ type PaymentLog struct {
 }
 
 func (pl *PaymentInitialized) save(database *mongo.Database) (*mongo.InsertOneResult, error) {
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-	res, err := database.Collection(PaymentLogsCollection).InsertOne(ctx, pl)
+	res, err := database.Collection(PaymentLogsCollection).InsertOne(context.Background(), pl)
 	if err != nil {
 		log.Printf("[MongoDB] PaymentInitialized saving error: %s", err)
 		return nil, err
