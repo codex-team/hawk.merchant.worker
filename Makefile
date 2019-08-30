@@ -1,4 +1,4 @@
-DOCKER_IMAGE=hawk.merchant.go
+DOCKER_IMAGE=hawk.merchant
 
 docker: docker-build docker-run
 

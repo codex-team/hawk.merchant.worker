@@ -13,17 +13,17 @@ import (
 
 const WorkspacesCollection = "workspaces"
 
-func updateWorkspaceBalance(database *mongo.Database, workspaceId string, amount uint) error {
+func updateWorkspaceBalance(database *mongo.Database, workspaceId primitive.ObjectID, amount uint64) error {
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 
-	workspaceObjectId, err := primitive.ObjectIDFromHex(workspaceId)
-	if err != nil {
-		log.Printf("[MongoDB] invalid workspaceId: %s", workspaceId)
-		return err
-	}
+	//workspaceObjectId, err := primitive.ObjectIDFromHex(workspaceId)
+	//if err != nil {
+	//	log.Printf("[MongoDB] invalid workspaceId: %s", workspaceId)
+	//	return err
+	//}
 
 	result, err := database.Collection(WorkspacesCollection).UpdateOne(ctx, bson.D{
-		{"_id", workspaceObjectId},
+		{"_id", workspaceId},
 	}, bson.D{
 		{"$inc", bson.D{
 			{

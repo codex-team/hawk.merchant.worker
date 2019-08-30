@@ -1,17 +1,46 @@
 package main
 
-type UserBankCard struct {
-	UserId     string `json:"userId"`
-	CardId     string `json:"cardId"`
-	Pan        string `json:"pan"`
-	ExpDate    string `json:"expDate"`
-	CardType   string `json:"cardType"`
-	CardNumber string `json:"cardNumber"`
+import (
+	"context"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"log"
+	"time"
+)
+
+type UserCard struct {
+	UserId    primitive.ObjectID `bson:"userId"`
+	CardId    uint64             `bson:"cardId"`
+	Pan       string             `bson:"pan"`
+	ExpDate   string             `bson:"expDate"`
+	RebillId  uint64             `bson:"rebillId"`
+	PaymentId uint64             `bson:"paymentId"`
 }
 
-type UserPaymentData struct {
-	UserId string         `json:"userId"`
-	Email  string         `json:"email"`
-	Phone  string         `json:"phone"`
-	Cards  []UserBankCard `json:"cards"`
+func (uc *UserCard) insert(database *mongo.Database) error {
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+
+	var existingCard UserCard
+	err := database.Collection(UserCardCollection).FindOne(ctx, bson.D{
+		{"userId", uc.UserId},
+		{"cardId", uc.CardId},
+	}).Decode(&existingCard)
+	if err == mongo.ErrNoDocuments {
+		res, insertErr := database.Collection(UserCardCollection).InsertOne(ctx, uc)
+		if insertErr != nil {
+			log.Printf("[MongoDB] New card insert error: %s", err)
+			return insertErr
+		}
+		log.Printf("[MongoDB] Link new card (%d) for user (%s): %s", uc.CardId, uc.UserId, res.InsertedID)
+		return nil
+	}
+	if err != nil {
+		log.Printf("[MongoDB] UserCard find error: %s", err)
+		return err
+	}
+
+	log.Printf("UserCard already exists: %v\n", existingCard)
+	log.Printf("New card from bank: %v\n", uc)
+	return nil
 }

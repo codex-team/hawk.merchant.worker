@@ -114,17 +114,17 @@ func main() {
 	go handleQueue("merchant/initialized", func(body []byte, database *mongo.Database) {
 		log.Printf("merchant/initialized: %s", body)
 
-		var payment PaymentInitialized
+		var payment Transaction
 		if err := json.Unmarshal(body, &payment); err != nil {
 			log.Printf("[PaymentInitialized] Unmarshal payload error: %s", err)
 			return
 		}
 
-		res, err := payment.save(database)
+		err := payment.save(database)
 		if err != nil {
 			return
 		}
-		log.Printf("[initialized] payment saved: ID=%s", res.InsertedID)
+		log.Printf("[initialized] payment saved: orderId=%s", payment.OrderId)
 	})
 
 	go handleQueue("merchant/authorized", func(body []byte, database *mongo.Database) {
@@ -160,8 +160,8 @@ func main() {
 				TerminalKey: tinkoffTerminalKey,
 				Token:       tinkoffSecretKey,
 			},
-			PaymentID: payment.PaymentId,
-			Amount:    payment.Amount,
+			PaymentID: uint64(payment.PaymentId),
+			Amount:    uint64(payment.Amount),
 		})
 		if err != nil {
 			return
@@ -170,6 +170,21 @@ func main() {
 		if err := transaction.update(database, payment.OrderId); err != nil {
 			return
 		}
+
+		//userIdObject, err := primitive.ObjectIDFromHex(transaction.UserId)
+		//failOnError(err, "Cannot convert UserId to objectId")
+
+		card := UserCard{
+			UserId:    transaction.UserId,
+			CardId:    payment.CardId,
+			Pan:       payment.Pan,
+			ExpDate:   payment.ExpDate,
+			RebillId:  payment.RebillId,
+			PaymentId: payment.PaymentId,
+		}
+
+		err = card.insert(database)
+		failOnError(err, "UserCard saving error during confirmation stage")
 
 		messagesQueue <- QueueMessage{
 			Type: "merchant",
@@ -184,6 +199,27 @@ func main() {
 
 	go handleQueue("merchant/confirmed", func(body []byte, database *mongo.Database) {
 		log.Printf("confirmed: %s", body)
+	})
+
+	go handleQueue("merchant/charged", func(body []byte, database *mongo.Database) {
+		log.Printf("charged: %s", body)
+
+		var transaction Transaction
+		if err := json.Unmarshal(body, &transaction); err != nil {
+			log.Printf("Charge unmarshal error: %s", err)
+			return
+		}
+
+		if err := transaction.save(database); err != nil {
+			log.Printf("Transaction save error: %s", err)
+			return
+		}
+
+		err := updateWorkspaceBalance(database, transaction.WorkspaceId, transaction.Amount)
+		if err != nil {
+			log.Printf("Balance update error: %s", err)
+			return
+		}
 	})
 
 	log.Printf("Server started:\n\t- AMQP: %s\n\t- MongoDB: %s\n", amqpURL, mongoURL)
