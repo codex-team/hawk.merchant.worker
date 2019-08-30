@@ -129,7 +129,7 @@ func (tr *Transaction) update(database *mongo.Database, orderId string) error {
 func (tr *Transaction) save(database *mongo.Database) error {
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 
-	_, err := database.Collection(UserCardCollection).InsertOne(ctx, tr)
+	_, err := database.Collection(PaymentTransactionsCollection).InsertOne(ctx, tr)
 	if err != nil {
 		return err
 	}
