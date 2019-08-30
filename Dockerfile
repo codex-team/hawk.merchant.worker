@@ -16,7 +16,7 @@ RUN go mod download
 
 # copy app sources and build
 ADD ./src $BUILD_DIRECTORY
-RUN go build -o hawk.merchant.go .
+RUN go build -o hawk.merchant .
 
 FROM alpine
 ARG BUILD_DIRECTORY=/build
@@ -24,4 +24,4 @@ ARG BUILD_DIRECTORY=/build
 WORKDIR /app
 COPY --from=builder $BUILD_DIRECTORY .
 
-CMD ["./hawk.merchant.go"]
+CMD ["./hawk.merchant"]

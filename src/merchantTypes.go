@@ -13,6 +13,8 @@ import (
 const PaymentLogsCollection = "paymentLogs"
 const PaymentTransactionsCollection = "paymentTransactions"
 const TransactionConfirmed = "CONFIRM"
+const UsersCollection = "users"
+const UserCardCollection = "userCard"
 
 type PaymentInitialized struct {
 	PaymentURL    string `json:"paymentURL"`
@@ -32,7 +34,7 @@ type PaymentAuthorized struct {
 	Timestamp uint32 `json:"timestamp"`
 	ErrorCode int    `json:"errorCode,string"`
 	Amount    uint64 `json:"amount"`
-	CardId    int    `json:"cardId"`
+	CardId    uint32 `json:"cardId"`
 	Pan       string `json:"pan"`
 	ExpDate   string `json:"expDate"`
 	RebillId  uint64 `json:"rebillId"`
@@ -60,7 +62,7 @@ type PaymentLog struct {
 	RebillId    uint64    `bson:"rebillid,omitempty"`
 	ErrorCode   int       `bson:"errorCode"`
 	Amount      uint64    `bson:"amount,omitempty"`
-	CardId      int       `bson:"cardId,omitempty"`
+	CardId      uint32    `bson:"cardId,omitempty"`
 	Pan         string    `bson:"pan,omitempty"`
 	ExpDate     string    `bson:"expDate,omitempty"`
 }
@@ -91,7 +93,6 @@ func (tr *Transaction) find(database *mongo.Database, orderId string) (bool, err
 	err := database.Collection(PaymentTransactionsCollection).FindOne(ctx, bson.D{
 		{"orderId", orderId},
 	}).Decode(&t)
-	log.Printf("%v", t)
 	if err == mongo.ErrNoDocuments {
 		return false, nil
 	}

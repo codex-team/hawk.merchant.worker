@@ -171,6 +171,18 @@ func main() {
 			return
 		}
 
+		card := UserCard{
+			UserId:    transaction.UserId,
+			CardId:    payment.CardId,
+			Pan:       payment.Pan,
+			ExpDate:   payment.ExpDate,
+			RebillId:  payment.RebillId,
+			PaymentId: payment.PaymentId,
+		}
+
+		err = card.insert(database)
+		failOnError(err, "UserCard saving error during confirmation stage")
+
 		messagesQueue <- QueueMessage{
 			Type: "merchant",
 			Payload: NotificationMessage{
