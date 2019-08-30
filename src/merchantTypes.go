@@ -14,7 +14,7 @@ import (
 const PaymentLogsCollection = "paymentLogs"
 const PaymentTransactionsCollection = "paymentTransactions"
 const TransactionConfirmed = "CONFIRM"
-const UserCardCollection = "userCard"
+const UserCardCollection = "userCards"
 
 type PaymentInitialized struct {
 	PaymentURL string             `bson:"paymentURL"`
