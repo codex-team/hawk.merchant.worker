@@ -187,6 +187,12 @@ func main() {
 			failOnError(err, "UserCard saving error during confirmation stage")
 		}
 
+		err = updateWorkspaceBalance(database, transaction.WorkspaceId, transaction.Amount)
+		if err != nil {
+			log.Printf("Balance update error: %s", err)
+			return
+		}
+
 		messagesQueue <- QueueMessage{
 			Type: "merchant",
 			Payload: NotificationMessage{
