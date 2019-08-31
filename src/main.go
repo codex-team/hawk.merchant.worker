@@ -167,24 +167,25 @@ func main() {
 			return
 		}
 
+		status := transaction.Status
+
 		if err := transaction.update(database, payment.OrderId); err != nil {
 			return
 		}
 
-		//userIdObject, err := primitive.ObjectIDFromHex(transaction.UserId)
-		//failOnError(err, "Cannot convert UserId to objectId")
+		if status != TransactionSinglePayment {
+			card := UserCard{
+				UserId:    transaction.UserId,
+				CardId:    payment.CardId,
+				Pan:       payment.Pan,
+				ExpDate:   payment.ExpDate,
+				RebillId:  payment.RebillId,
+				PaymentId: payment.PaymentId,
+			}
 
-		card := UserCard{
-			UserId:    transaction.UserId,
-			CardId:    payment.CardId,
-			Pan:       payment.Pan,
-			ExpDate:   payment.ExpDate,
-			RebillId:  payment.RebillId,
-			PaymentId: payment.PaymentId,
+			err = card.insert(database)
+			failOnError(err, "UserCard saving error during confirmation stage")
 		}
-
-		err = card.insert(database)
-		failOnError(err, "UserCard saving error during confirmation stage")
 
 		messagesQueue <- QueueMessage{
 			Type: "merchant",
