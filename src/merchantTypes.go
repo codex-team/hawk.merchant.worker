@@ -14,6 +14,7 @@ import (
 const PaymentLogsCollection = "paymentLogs"
 const PaymentTransactionsCollection = "paymentTransactions"
 const TransactionConfirmed = "CONFIRM"
+const TransactionSinglePayment = "SINGLE"
 const UserCardCollection = "userCards"
 
 type PaymentInitialized struct {
