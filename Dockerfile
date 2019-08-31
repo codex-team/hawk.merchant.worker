@@ -21,6 +21,8 @@ RUN go build -o hawk.merchant .
 FROM alpine
 ARG BUILD_DIRECTORY=/build
 
+RUN apk add ca-certificates
+
 WORKDIR /app
 COPY --from=builder $BUILD_DIRECTORY .
 
